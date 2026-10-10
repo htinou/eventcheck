@@ -1,0 +1,53 @@
+name: Restore executable JAR
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: restore-eventcheck-jar
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Download and verify published version 0.5.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --max-time 180 \
+            https://github.com/htinou/eventcheck/releases/download/v0.5.0/EventCheck_0.5.0.zip \
+            --output "$RUNNER_TEMP/eventcheck.zip"
+          echo "212daf4e724df814c7c9d7ea842fe6e059b759490cb99813b15dd0290b003fe0  $RUNNER_TEMP/eventcheck.zip" | sha256sum --check
+          mkdir -p release
+          unzip -p "$RUNNER_TEMP/eventcheck.zip" eventcheck/release/eventcheck.jar > release/eventcheck.jar
+          echo '518b3f5737b0ab19368afe6b119b12ebaa8746ba5519faf600e6e2173e8c1765  release/eventcheck.jar' | sha256sum --check
+          printf '%s\n' '518b3f5737b0ab19368afe6b119b12ebaa8746ba5519faf600e6e2173e8c1765  eventcheck.jar' > release/SHA256SUMS
+      - name: Commit executable JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add release/eventcheck.jar release/SHA256SUMS
+          if git diff --cached --quiet; then
+            echo 'The published JAR is already in the repository.'
+            exit 0
+          fi
+          git commit -m 'Restore EventCheck 0.5.0 executable JAR in release/'
+          git push origin HEAD:main
+      - name: Point latest tag at the commit containing the JAR
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest_sha=$(git ls-remote origin refs/tags/latest | cut -f1)
+          test -n "$latest_sha"
+          git push --force-with-lease=refs/tags/latest:"$latest_sha" origin HEAD:refs/tags/latest
