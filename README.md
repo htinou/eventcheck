@@ -1,6 +1,16 @@
-# EventCheck — Version 0.4 — base de données embarquée
+# EventCheck — Version 0.5 — base de données embarquée
 
 Application Angular + API Java Spring Boot + H2 embarquée et persistante. PostgreSQL reste facultatif via un profil séparé. Cette livraison conserve la préparation et l’import CSV/Excel et ajoute un prototype de caméra/OCR local, champs modifiables et recherche assistée, sans confirmation automatique. La démonstration contient aussi dix invités fictifs, trois agents et un superviseur.
+
+La version complète (avec le JAR prêt à lancer) est disponible dans [les versions GitHub](https://github.com/htinou/eventcheck/releases). Les sources seules sont dans `EventCheck_sources_0.5.0.zip`.
+
+Pour passer de 0.4 à 0.5 : arrêter l’application, sauvegarder le dossier utilisateur EventCheck, puis lancer la nouvelle version. Le dossier de données et les accès existants sont conservés ; le schéma de base ne change pas.
+
+## Nouveautés de la version 0.5
+
+- Ajout et modification d’un invité en brouillon, sans remplacer les autres participants.
+- Modèle CSV téléchargeable depuis « Les invités », également fourni dans `docs/modele_invites.csv` : remplacer les deux exemples fictifs.
+- OCR : libellés sans deux-points et sur des lignes séparées, noms MRZ TD1, progression, choix de photo et erreurs explicites. Sur téléphone via HTTP, utiliser une photo ; la caméra en direct exige HTTPS. HEIC dépend du navigateur ; JPEG ou PNG sont recommandés.
 
 ## Ce qui fonctionne
 
@@ -25,6 +35,8 @@ Le scan est un prototype à qualifier sur de vrais téléphones, pas une lecture
 ## Préparer un événement
 
 Avec `supervision`, choisir « Créer un événement », indiquer son nom et sa date (Europe/Paris), puis préparer les informations et l’équipe. Les trois entrées sont créées automatiquement. Importer le fichier et vérifier les colonnes du nom, du prénom et de la référence facultative. Après une modification des colonnes, cliquer « Vérifier les colonnes choisies » pour recalculer l’aperçu. Les références répétées et les champs invalides bloquent l’import ; les homonymes restent des personnes distinctes et demandent une confirmation explicite.
+
+Les boutons « Ajouter un invité + » et « Modifier » permettent de gérer un participant en brouillon. Nom et prénom sont obligatoires, la référence facultative est unique ; les homonymes demandent une confirmation. Après ouverture, ces actions sont figées.
 
 L’import remplace toute la liste, uniquement en brouillon, après revalidation côté serveur. Formats : CSV UTF-8, virgule ou point-virgule, avec en-tête ; XLSX, première feuille, valeurs sans formules. Limites : 100 invités, 2 Mo, 30 colonnes ; nom, prénom et référence limités à 100 caractères. Les archives XLSX sont aussi limitées à 16 Mo décompressés et 256 entrées. Aucun aperçu ne modifie la base.
 
